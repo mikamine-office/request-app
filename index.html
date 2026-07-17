@@ -35,7 +35,7 @@
       <p id="login-error" class="text-red-500 text-sm mt-2 text-center hidden"></p>
     </div>
 
-<!-- 2. 申請フォーム（ログイン後に表示） -->
+    <!-- 2. 申請フォーム（ログイン後に表示） -->
     <div id="form-section" class="bg-white p-6 rounded-lg shadow-md hidden">
       <div class="border-b pb-4 mb-4">
         <h2 id="form-title" class="text-xl font-bold text-blue-700">申請タイトル</h2>
@@ -114,7 +114,7 @@
 
     let currentUser = null;
 
-// グローバル変数で所属と氏名を保持する変数
+    // グローバル変数で所属と氏名を保持する変数
     let detectedDept = "不明";
     let detectedName = "不明";
 
@@ -143,14 +143,14 @@
         try {
           // ★★★ Firestore の "users" コレクションから、ログインユーザーの情報を取得する ★★★
           // ドキュメントIDが user.uid になっているデータを1件取得します
-          const userDoc = await db.collection("users").doc(user.uid).get();
+          const userDoc = await db.collection("common_users").doc(user.uid).get();
 
           if (userDoc.exists) {
             const userData = userDoc.data();
             console.log("Firestoreから取得したユーザーデータ:", userData);
 
-            // データの項目名が department / name もしくは userName / userDept などのパターンに対応
-            detectedDept = userData.department || userData.registerDept || userData.userDept || "部署登録なし";
+            // 🌟 修正箇所：応接アプリに合わせ、userData.dept を最優先で取得するように変更しました
+            detectedDept = userData.dept || userData.department || userData.registerDept || userData.userDept || "部署登録なし";
             detectedName = userData.name || userData.userName || userData.registerName || "名前登録なし";
 
           } else {
@@ -159,7 +159,8 @@
             const emailQuery = await db.collection("users").where("email", "==", user.email).get();
             if (!emailQuery.empty) {
               const userData = emailQuery.docs[0].data();
-              detectedDept = userData.department || userData.registerDept || userData.userDept || "部署登録なし";
+              // 🌟 修正箇所：こちらも同様に userData.dept を最優先に探すように変更しました
+              detectedDept = userData.dept || userData.department || userData.registerDept || userData.userDept || "部署登録なし";
               detectedName = userData.name || userData.userName || userData.registerName || "名前登録なし";
             } else {
               console.warn("ユーザープロファイルがデータベースに見つかりませんでした。");
@@ -238,7 +239,7 @@
       }
     }
 
-　　　// 申請フォーム送信処理
+    // 申請フォーム送信処理
     document.getElementById('request-form').addEventListener('submit', async (e) => {
       e.preventDefault(); // ページのリロードを防ぐ
       
