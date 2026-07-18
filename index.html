@@ -4,12 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>学内申請・要求アプリ</title>
-  <!-- Tailwind CSS（デザインを素早く整えるためのライブラリ） -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
 
-  <!-- ヘッダー -->
   <header class="bg-blue-700 text-white p-4 shadow-md">
     <div class="container mx-auto flex justify-between items-center">
       <h1 id="app-title" class="text-xl font-bold">学内申請アプリ</h1>
@@ -17,10 +15,8 @@
     </div>
   </header>
 
-  <!-- メインコンテンツ -->
   <main class="container mx-auto px-4 py-8 max-w-md flex-grow">
     
-    <!-- 1. ログインフォーム -->
     <div id="login-section" class="bg-white p-6 rounded-lg shadow-md">
       <h2 class="text-lg font-bold mb-4 text-center">教職員ログイン</h2>
       <div class="mb-4">
@@ -35,30 +31,25 @@
       <p id="login-error" class="text-red-500 text-sm mt-2 text-center hidden"></p>
     </div>
 
-    <!-- 2. 申請フォーム（ログイン後に表示） -->
     <div id="form-section" class="bg-white p-6 rounded-lg shadow-md hidden">
       <div class="border-b pb-4 mb-4">
         <h2 id="form-title" class="text-xl font-bold text-blue-700">申請タイトル</h2>
         <p id="form-desc" class="text-gray-600 text-sm mt-1">説明文がここに表示されます。</p>
       </div>
 
-      <!-- 既に申請済みの場合のメッセージ -->
       <div id="already-submitted" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded mb-4 hidden text-center font-bold">
         今回の申請は既に完了しています。
       </div>
 
-      <!-- 申請者情報表示と申請ボタン（未申請の場合のみ表示） -->
       <form id="request-form" class="space-y-4">
-        <!-- 所属部署の表示エリア -->
-        <div class="bg-gray-50 p-3 rounded border">
-          <span class="block text-xs font-bold text-gray-500 mb-1">所属部署</span>
-          <span id="display-dept" class="text-base font-semibold text-gray-800">取得中...</span>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">所属部署（修正したい場合は、入力してください）</label>
+          <input type="text" id="input-dept" class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800" placeholder="（例：事務局、英語科など）">
         </div>
 
-        <!-- 氏名の表示エリア -->
-        <div class="bg-gray-50 p-3 rounded border">
-          <span class="block text-xs font-bold text-gray-500 mb-1">教職員氏名</span>
-          <span id="display-name" class="text-base font-semibold text-gray-800">取得中...</span>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">教職員氏名（修正したい場合は、入力してください）</label>
+          <input type="text" id="input-name" class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800" placeholder="（例：山田 太郎）">
         </div>
 
         <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow">
@@ -69,12 +60,10 @@
 
   </main>
 
-  <!-- フッター -->
   <footer class="bg-gray-100 text-center py-4 text-xs text-gray-500 border-t">
     &copy; 2026 学内システム管理
   </footer>
 
-  <!-- Firebase SDK（Ver 9の互換モード / 以前のコードと組み合わせやすい記述を採用しています） -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -104,7 +93,7 @@
       appKey: "book-2026-07", // ★合言葉（今回の冊子注文用のキー）
       title: "私学共済発行ハーモニー夏号 配布希望申請",
       description: "希望される教職員の方にハーモニー夏号をお配りします。お一人様1冊までとなります。希望される方は申請してください。",
-      isClosed: false // ★ここを追加！ true にすると「停止中」になります。受付中は false にします。
+      isClosed: false // ★true にすると「停止中」になります。受付中は false にします。
     };
 
     // 画面の初期表示設定
@@ -114,10 +103,6 @@
 
     let currentUser = null;
 
-    // グローバル変数で所属と氏名を保持する変数
-    let detectedDept = "不明";
-    let detectedName = "不明";
-
     // ログイン状態の監視
     auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -125,58 +110,53 @@
         showSection('form-section');
         document.getElementById('logout-btn').classList.remove('hidden');
 
-        // --- ★ここから追加★ ---
         if (CURRENT_APPLICATION.isClosed) {
-          // 既に申請済みメッセージのエリアを流用して、停止中メッセージを表示する
           const alreadySubmittedMsg = document.getElementById('already-submitted');
           const requestForm = document.getElementById('request-form');
           
           requestForm.classList.add('hidden');
           alreadySubmittedMsg.textContent = "この注文アプリは現在停止中（受付期間外）です。";
           alreadySubmittedMsg.classList.remove('hidden');
-          
-          // 停止中の場合は、以下のデータ取得処理などはスキップする
           return;
         }
-        // --- ★ここまで追加★ ---
         
         try {
-          // ★★★ Firestore の "users" コレクションから、ログインユーザーの情報を取得する ★★★
-          // ドキュメントIDが user.uid になっているデータを1件取得します
+          // 🌟 共通保管庫 "common_users" からログインユーザーの情報を取得
           const userDoc = await db.collection("common_users").doc(user.uid).get();
+
+          const inputDept = document.getElementById('input-dept');
+          const inputName = document.getElementById('input-name');
 
           if (userDoc.exists) {
             const userData = userDoc.data();
-            console.log("Firestoreから取得したユーザーデータ:", userData);
+            console.log("共通保管庫から取得したユーザーデータ:", userData);
 
-            // 🌟 修正箇所：応接アプリに合わせ、userData.dept を最優先で取得するように変更しました
-            detectedDept = userData.dept || userData.department || userData.registerDept || userData.userDept || "部署登録なし";
-            detectedName = userData.name || userData.userName || userData.registerName || "名前登録なし";
+            // データが存在し、かつ「社員/メンバー」などのデフォルト初期値でなければフォームに入れる
+            // 初期値のままであれば、未登録扱い（空白）にして入力させます
+            const currentDept = userData.dept || "";
+            const currentName = userData.name || "";
+
+            if (currentDept === "社員" || currentDept === "プロファイル未登録") {
+              inputDept.value = "";
+            } else {
+              inputDept.value = currentDept;
+            }
+
+            if (currentName === "メンバー" || currentName === "（新規ユーザー）") {
+              inputName.value = "";
+            } else {
+              inputName.value = currentName;
+            }
 
           } else {
-            // もし "users" コレクションに user.uid のデータが直接見つからない場合、
-            // email で検索をかける予備の処理（フォールバック）を走らせます
-            const emailQuery = await db.collection("users").where("email", "==", user.email).get();
-            if (!emailQuery.empty) {
-              const userData = emailQuery.docs[0].data();
-              // 🌟 修正箇所：こちらも同様に userData.dept を最優先に探すように変更しました
-              detectedDept = userData.dept || userData.department || userData.registerDept || userData.userDept || "部署登録なし";
-              detectedName = userData.name || userData.userName || userData.registerName || "名前登録なし";
-            } else {
-              console.warn("ユーザープロファイルがデータベースに見つかりませんでした。");
-              detectedDept = "プロファイル未登録";
-              detectedName = "（新規ユーザー）";
-            }
+            // 🌟 共通保管庫にデータが全く無い場合は、入力欄を完全に空白にする
+            console.log("共通保管庫にプロファイルがありません。新規入力が必要です。");
+            inputDept.value = "";
+            inputName.value = "";
           }
         } catch (error) {
           console.error("プロフィール取得エラー:", error);
-          detectedDept = "エラー";
-          detectedName = "データ取得失敗";
         }
-
-        // 画面にテキストとして表示
-        document.getElementById('display-dept').textContent = detectedDept;
-        document.getElementById('display-name').textContent = detectedName;
 
         // すでに今回の合言葉で申請済みかチェックする
         checkAlreadySubmitted(user.email);
@@ -214,23 +194,19 @@
 
     // 重複申請チェック関数
     async function checkAlreadySubmitted(email) {
-      const submitBtn = document.getElementById('submit-btn');
       const requestForm = document.getElementById('request-form');
       const alreadySubmittedMsg = document.getElementById('already-submitted');
 
       try {
-        // Firestoreから「今回の合言葉（appKey）」で、かつ「ログインユーザーのemail」に一致するデータを検索
         const querySnapshot = await db.collection("requests")
           .where("appKey", "==", CURRENT_APPLICATION.appKey)
           .where("email", "==", email)
           .get();
 
         if (!querySnapshot.empty) {
-          // すでにデータが存在する場合：フォームを非表示にしてメッセージを出す
           requestForm.classList.add('hidden');
           alreadySubmittedMsg.classList.remove('hidden');
         } else {
-          // まだ申請していない場合：通常通り表示
           requestForm.classList.remove('hidden');
           alreadySubmittedMsg.classList.add('hidden');
         }
@@ -239,38 +215,51 @@
       }
     }
 
-    // 申請フォーム送信処理
+    // 🌟 申請フォーム送信 ＆ 共通保管庫アップデート処理
     document.getElementById('request-form').addEventListener('submit', async (e) => {
-      e.preventDefault(); // ページのリロードを防ぐ
+      e.preventDefault(); 
       
       const submitBtn = document.getElementById('submit-btn');
+      const deptVal = document.getElementById('input-dept').value.trim();
+      const nameVal = document.getElementById('input-name').value.trim();
+
+      // 🌟 未入力チェック（空白での申請を防ぐ）
+      if (!deptVal || !nameVal) {
+        alert("所属部署と教職員氏名を入力してください。");
+        return;
+      }
       
-      // 二重送信を防ぐために一時的に無効化
       submitBtn.disabled = true;
       submitBtn.textContent = "送信中...";
 
       try {
-        // グローバル変数で取得・保持している「detectedDept（部署）」と「detectedName（氏名）」を
-        // そのまま Firestore の "requests" コレクションに書き込みます
+        // 🌟【新機能】申請ボタンが押された瞬間、入力された最新の所属・氏名を「共通保管庫」に上書き・新規保存する
+        await db.collection("common_users").doc(currentUser.uid).set({
+          dept: deptVal,
+          name: nameVal,
+          email: currentUser.email,
+          updatedAt: new Date().toISOString()
+        }, { merge: true }); // merge: true で既存の項目を壊さずに上書き
+
+        // 続いて、今回の冊子注文の申請データを "requests" コレクションに書き込みます
         await db.collection("requests").add({
           appKey: CURRENT_APPLICATION.appKey,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           email: currentUser.email,
-          department: detectedDept, // ログイン時に取得した部署
-          userName: detectedName,   // ログイン時に取得した氏名
+          department: deptVal, // 最新の入力内容
+          userName: nameVal,   // 最新の入力内容
           status: "未配布"
         });
 
-        alert("申請が完了しました！");
+        alert("プロフィールの更新および、申請が完了しました！");
         
         // 申請完了したら、再度重複チェックを走らせてフォームを非表示にします
         await checkAlreadySubmitted(currentUser.email);
 
       } catch (error) {
-        console.error("送信エラー:", error);
+        console.error("送信・保存エラー:", error);
         alert("送信に失敗しました。エラー: " + error.message);
         
-        // エラー時はボタンを元に戻して再試行できるようにする
         submitBtn.disabled = false;
         submitBtn.textContent = "この内容で申請する";
       }
