@@ -4,8 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>学内申請・要求アプリ</title>
-  <!-- Tailwind CSS（デザインを素早く整えるためのライブラリ） -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
 
@@ -20,45 +24,91 @@
   <!-- メインコンテンツ -->
   <main class="container mx-auto px-4 py-8 max-w-md flex-grow">
     
-    <!-- 1. ログインフォーム -->
-    <div id="login-section" class="bg-white p-6 rounded-lg shadow-md">
-      <h2 class="text-lg font-bold mb-4 text-center">教職員ログイン</h2>
-      <div class="mb-4">
-        <label class="block text-sm font-bold mb-1">学内メールアドレス</label>
-        <input type="email" id="login-email" class="w-full border rounded p-2" placeholder="example@school.ac.jp">
+    <!-- 🔒 1. 認証セクション（ログイン / 新規登録 兼用カード） -->
+    <div id="login-section" class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
+      <!-- ステータスバナー -->
+      <div id="statusBanner" class="p-3 text-center text-xs font-semibold border-b bg-slate-50 flex items-center justify-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+        <span id="statusBannerText">学内アカウントでサインイン</span>
       </div>
-      <div class="mb-6">
-        <label class="block text-sm font-bold mb-1">パスワード</label>
-        <input type="password" id="login-password" class="w-full border rounded p-2">
+
+      <div class="p-6 bg-slate-50/50 border-b border-slate-100 text-center">
+        <h2 id="authTitle" class="text-lg font-bold text-slate-900">ログイン</h2>
+        <p class="text-xs text-slate-500 mt-1">許可されたドメインのメールアドレスのみ利用できます</p>
+        <div class="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+          <span>許可ドメイン: <strong id="allowedDomainLabel">確認中</strong></span>
+        </div>
       </div>
-      <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded">ログイン</button>
-      <p id="login-error" class="text-red-500 text-sm mt-2 text-center hidden"></p>
+
+      <div class="p-6 space-y-4">
+        <!-- エラーメッセージ表示エリア -->
+        <div id="login-error" class="hidden p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs font-medium"></div>
+
+        <!-- メールアドレス -->
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">メールアドレス</label>
+          <input type="email" id="login-email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="user@school.ac.jp">
+        </div>
+
+        <!-- パスワード -->
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">このシステムのパスワード（６文字以上）</label>
+          <input type="password" id="login-password" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="••••••••">
+          <div id="forgotPasswordLinkContainer" class="text-right mt-2">
+            <button type="button" onclick="handlePasswordReset()" class="text-xs text-blue-600 hover:underline">
+              パスワードをお忘れの方はこちら
+            </button>
+          </div>
+        </div>
+
+        <!-- 👤 新規登録時のみ表示するプロフィール入力エリア -->
+        <div id="registerFields" class="hidden space-y-4 pt-2 border-t border-slate-100 animate-fadeIn">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">所属部署</label>
+            <input type="text" id="registerDept" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="例: 事務局、英語科">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">氏名</label>
+            <input type="text" id="registerName" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="例: 山田 太郎">
+          </div>
+        </div>
+
+        <!-- アクションボタン -->
+        <button id="login-btn" class="w-full py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition mt-4">
+          ログインする
+        </button>
+
+        <!-- モード切り替えリンク -->
+        <div class="text-center pt-2">
+          <button id="toggleAuthModeBtn" class="text-xs text-blue-500 hover:underline font-medium">
+            初めてこの三課事務室システムを使う方（新規登録）
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- 2. 申請フォーム（ログイン後に表示） -->
+    <!-- 📄 2. 申請フォーム（ログインかつメール認証完了後に表示） -->
     <div id="form-section" class="bg-white p-6 rounded-lg shadow-md hidden">
       <div class="border-b pb-4 mb-4">
         <h2 id="form-title" class="text-xl font-bold text-blue-700">申請タイトル</h2>
         <p id="form-desc" class="text-gray-600 text-sm mt-1">説明文がここに表示されます。</p>
       </div>
 
-      <!-- 既に申請済みの場合のメッセージ -->
+      <!-- 既に申請済み・または受付終了の場合のメッセージ -->
       <div id="already-submitted" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded mb-4 hidden text-center font-bold">
         今回の申請は既に完了しています。
       </div>
 
-      <!-- 申請者情報表示と申請ボタン（未申請の場合のみ表示） -->
+      <!-- 申請者情報入力＆申請フォーム -->
       <form id="request-form" class="space-y-4">
-        <!-- 所属部署の表示エリア -->
-        <div class="bg-gray-50 p-3 rounded border">
-          <span class="block text-xs font-bold text-gray-500 mb-1">所属部署</span>
-          <span id="display-dept" class="text-base font-semibold text-gray-800">取得中...</span>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">所属部署（修正したい場合は入力してください）</label>
+          <input type="text" id="input-dept" class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800" placeholder="（例：三課、事務室など）">
         </div>
 
-        <!-- 氏名の表示エリア -->
-        <div class="bg-gray-50 p-3 rounded border">
-          <span class="block text-xs font-bold text-gray-500 mb-1">教職員氏名</span>
-          <span id="display-name" class="text-base font-semibold text-gray-800">取得中...</span>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">教職員氏名（修正したい場合は入力してください）</label>
+          <input type="text" id="input-name" class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800" placeholder="（例：山田 太郎）">
         </div>
 
         <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow">
@@ -74,14 +124,14 @@
     &copy; 2026 学内システム管理
   </footer>
 
-  <!-- Firebase SDK（Ver 9の互換モード / 以前のコードと組み合わせやすい記述を採用しています） -->
+  <!-- Firebase SDK（Ver 9の互換モード） -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
     // ==========================================
-    // ★★★ ここに以前の「Firebase初期設定情報」を貼り付けてください ★★★
+    // ★★★ Firebase初期設定情報 ★★★
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyAL9f7KI0DfiOo0xqGGdAMKWFCI82k31N8",
@@ -97,100 +147,145 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    const ALLOWED_DOMAIN = "seiwa.ac.jp";
+    document.getElementById('allowedDomainLabel').textContent = ALLOWED_DOMAIN ? `@${ALLOWED_DOMAIN}` : "制限なし";
+
     // ==========================================
-    // ★★★ 申請の設定（ここを書き換えて使い回します！） ★★★
+    // ★★★ 申請の設定 ＆ 締切日時判定 ★★★
     // ==========================================
-    
     // === 受付終了日時の設定 (2026年7月31日 00:00:00) ===
     const deadline = new Date("2026-07-31T00:00:00");
-
-    // 現在の日時を取得
     const now = new Date();
-
-    // 現在日時が締め切りを過ぎていれば true、受付期間中なら false
     const isClosed = now >= deadline;
-    
-    
-    
+
     const CURRENT_APPLICATION = {
-      appKey: "book-2026-07", // ★合言葉（今回の冊子注文用のキー）
+      appKey: "book-2026-07",
       title: "私学共済発行ハーモニー夏号 配布希望申請",
       description: "希望される教職員の方にハーモニー夏号をお配りします。お一人様1冊までとなります。希望される方は申請してください。",
-      isClosed: isClosed // ★ここを「false」から変数「isClosed」に変更します！
+      isClosed: isClosed // ★ 締切日時を過ぎている場合は自動的に true になります
     };
 
-    // 画面の初期表示設定
     document.getElementById('app-title').textContent = CURRENT_APPLICATION.title;
     document.getElementById('form-title').textContent = CURRENT_APPLICATION.title;
     document.getElementById('form-desc').textContent = CURRENT_APPLICATION.description;
 
     let currentUser = null;
+    let isRegisterMode = false;
+    let isRegisteringProcess = false;
 
-    // グローバル変数で所属と氏名を保持する変数
-    let detectedDept = "不明";
-    let detectedName = "不明";
+    const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
+    const registerFields = document.getElementById('registerFields');
+    const authTitle = document.getElementById('authTitle');
+    const loginBtn = document.getElementById('login-btn');
+    const statusBannerText = document.getElementById('statusBannerText');
+    const forgotPasswordLinkContainer = document.getElementById('forgotPasswordLinkContainer');
 
-    // ログイン状態の監視
+    function setAuthMode(toRegister) {
+      isRegisterMode = toRegister;
+      if (isRegisterMode) {
+        authTitle.textContent = "新規アカウント作成";
+        statusBannerText.textContent = "アカウントを新規登録します";
+        loginBtn.textContent = "アカウントを登録する";
+        toggleAuthModeBtn.textContent = "既にアカウントをお持ちの方（ログイン）";
+        registerFields.classList.remove('hidden');
+        forgotPasswordLinkContainer.classList.add('hidden');
+      } else {
+        authTitle.textContent = "ログイン";
+        statusBannerText.textContent = "学内アカウントでサインイン";
+        loginBtn.textContent = "ログインする";
+        toggleAuthModeBtn.textContent = "初めてこの三課事務室システムを使う方（新規登録）";
+        registerFields.classList.add('hidden');
+        forgotPasswordLinkContainer.classList.remove('hidden');
+      }
+      document.getElementById('login-error').classList.add('hidden');
+    }
+
+    toggleAuthModeBtn.addEventListener('click', () => {
+      setAuthMode(!isRegisterMode);
+    });
+
+    window.handlePasswordReset = async function() {
+      const email = prompt("登録されているメールアドレスを入力してください：");
+      if (!email) return;
+
+      if (ALLOWED_DOMAIN && !email.endsWith("@" + ALLOWED_DOMAIN)) {
+        alert(`このシステムは「@${ALLOWED_DOMAIN}」のメールアドレスのみ利用可能です。`);
+        return;
+      }
+
+      auth.sendPasswordResetEmail(email)
+        .then(() => {
+          alert("パスワード再設定メールを送信しました！\nメールボックス（または迷惑メールフォルダ）をご確認ください。");
+        })
+        .catch(error => {
+          console.error("エラー詳細:", error);
+          if (error.code === 'auth/user-not-found') {
+            alert("このメールアドレスは登録されていません。");
+          } else {
+            alert("メール送信に失敗しました。アドレスに間違いがないかご確認ください。");
+          }
+        });
+    };
+
+    window.checkEmailVerificationOnLogin = function(user) {
+      if (!user.emailVerified) {
+        alert("メールアドレスの認証が完了していません。\n送信されたメール内のリンクをクリックして有効化してください。");
+        auth.signOut();
+        return false;
+      }
+      return true;
+    };
+
+    // 🔄 ログイン状態の監視
     auth.onAuthStateChanged(async (user) => {
+      if (isRegisteringProcess) return;
+
       if (user) {
+        if (!checkEmailVerificationOnLogin(user)) return;
+
         currentUser = user;
         showSection('form-section');
         document.getElementById('logout-btn').classList.remove('hidden');
 
-        // --- ★ここから追加★ ---
+        // ★ 自動判定で締切（isClosed: true）になった場合
         if (CURRENT_APPLICATION.isClosed) {
-          // 既に申請済みメッセージのエリアを流用して、停止中メッセージを表示する
           const alreadySubmittedMsg = document.getElementById('already-submitted');
           const requestForm = document.getElementById('request-form');
-          
           requestForm.classList.add('hidden');
           alreadySubmittedMsg.textContent = "この注文アプリは現在停止中（受付期間外）です。";
           alreadySubmittedMsg.classList.remove('hidden');
-          
-          // 停止中の場合は、以下のデータ取得処理などはスキップする
           return;
         }
-        // --- ★ここまで追加★ ---
         
         try {
-          // ★★★ Firestore の "users" コレクションから、ログインユーザーの情報を取得する ★★★
-          // ドキュメントIDが user.uid になっているデータを1件取得します
           const userDoc = await db.collection("common_users").doc(user.uid).get();
+          const inputDept = document.getElementById('input-dept');
+          const inputName = document.getElementById('input-name');
 
           if (userDoc.exists) {
             const userData = userDoc.data();
-            console.log("Firestoreから取得したユーザーデータ:", userData);
+            const currentDept = userData.dept || "";
+            const currentName = userData.name || "";
 
-            // 🌟 修正箇所：応接アプリに合わせ、userData.dept を最優先で取得するように変更しました
-            detectedDept = userData.dept || userData.department || userData.registerDept || userData.userDept || "部署登録なし";
-            detectedName = userData.name || userData.userName || userData.registerName || "名前登録なし";
-
-          } else {
-            // もし "users" コレクションに user.uid のデータが直接見つからない場合、
-            // email で検索をかける予備の処理（フォールバック）を走らせます
-            const emailQuery = await db.collection("users").where("email", "==", user.email).get();
-            if (!emailQuery.empty) {
-              const userData = emailQuery.docs[0].data();
-              // 🌟 修正箇所：こちらも同様に userData.dept を最優先に探すように変更しました
-              detectedDept = userData.dept || userData.department || userData.registerDept || userData.userDept || "部署登録なし";
-              detectedName = userData.name || userData.userName || userData.registerName || "名前登録なし";
+            if (currentDept === "社員" || currentDept === "プロファイル未登録") {
+              inputDept.value = "";
             } else {
-              console.warn("ユーザープロファイルがデータベースに見つかりませんでした。");
-              detectedDept = "プロファイル未登録";
-              detectedName = "（新規ユーザー）";
+              inputDept.value = currentDept;
             }
+
+            if (currentName === "メンバー" || currentName === "（新規ユーザー）") {
+              inputName.value = "";
+            } else {
+              inputName.value = currentName;
+            }
+          } else {
+            inputDept.value = "";
+            inputName.value = "";
           }
         } catch (error) {
           console.error("プロフィール取得エラー:", error);
-          detectedDept = "エラー";
-          detectedName = "データ取得失敗";
         }
 
-        // 画面にテキストとして表示
-        document.getElementById('display-dept').textContent = detectedDept;
-        document.getElementById('display-name').textContent = detectedName;
-
-        // すでに今回の合言葉で申請済みかチェックする
         checkAlreadySubmitted(user.email);
       } else {
         currentUser = null;
@@ -199,50 +294,114 @@
       }
     });
 
-    // セクションの切り替え表示
     function showSection(sectionId) {
       document.getElementById('login-section').classList.add('hidden');
       document.getElementById('form-section').classList.add('hidden');
       document.getElementById(sectionId).classList.remove('hidden');
     }
 
-    // ログイン処理
-    document.getElementById('login-btn').addEventListener('click', () => {
-      const email = document.getElementById('login-email').value;
+    loginBtn.addEventListener('click', () => {
+      const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
       const errorEl = document.getElementById('login-error');
+      errorEl.classList.add('hidden');
 
-      auth.signInWithEmailAndPassword(email, password)
-        .catch(error => {
-          errorEl.textContent = "ログインに失敗しました。メールアドレスまたはパスワードを確認してください。";
+      if (!email || !password) {
+        errorEl.textContent = "メールアドレスとパスワードを入力してください。";
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      if (ALLOWED_DOMAIN && !email.endsWith("@" + ALLOWED_DOMAIN)) {
+        errorEl.textContent = `このシステムは「@${ALLOWED_DOMAIN}」のメールアドレスのみ利用可能です。`;
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      if (isRegisterMode) {
+        const regDept = document.getElementById('registerDept').value.trim();
+        const regName = document.getElementById('registerName').value.trim();
+
+        if (!regDept || !regName) {
+          errorEl.textContent = "所属部署と氏名を入力してください。";
           errorEl.classList.remove('hidden');
-        });
+          return;
+        }
+
+        isRegisteringProcess = true;
+
+        auth.createUserWithEmailAndPassword(email, password)
+          .then(async (userCredential) => {
+            const newUser = userCredential.user;
+            
+            await db.collection("common_users").doc(newUser.uid).set({
+              dept: regDept,
+              name: regName,
+              email: email,
+              createdAt: new Date().toISOString()
+            });
+
+            return newUser.sendEmailVerification();
+          })
+          .then(async () => {
+            alert(
+              `【仮登録が完了しました！】\n\n` +
+              `${email} 宛にアカウント有効化メールを送信しました。\n` +
+              `迷惑メールフォルダに着信している可能性があります。\n` +
+              `メール内のリンクをクリックしてアカウントを有効化した後、ログイン画面からログインしてください。\n` +
+              `リンクをクリックし、Complete verification（検証を完了する）を押してください。\n\n` +
+              `※リンクをクリックするまで、システムにはログインできません。`
+            );
+            
+            document.getElementById('registerDept').value = "";
+            document.getElementById('registerName').value = "";
+            document.getElementById('login-password').value = ""; 
+            setAuthMode(false);
+            
+            await auth.signOut();
+            isRegisteringProcess = false;
+          })
+          .catch(error => {
+            isRegisteringProcess = false;
+            console.error("新規登録エラー:", error);
+            if (error.code === "auth/email-already-in-use") {
+              errorEl.textContent = "このメールアドレスは既に登録されています。";
+            } else if (error.code === "auth/weak-password") {
+              errorEl.textContent = "パスワードは6文字以上で設定してください。";
+            } else {
+              errorEl.textContent = "アカウント登録に失敗しました: " + error.message;
+            }
+            errorEl.classList.remove('hidden');
+          });
+
+      } else {
+        auth.signInWithEmailAndPassword(email, password)
+          .catch(error => {
+            errorEl.textContent = "ログインに失敗しました。メールアドレスまたはパスワードを確認してください。";
+            errorEl.classList.remove('hidden');
+          });
+      }
     });
 
-    // ログアウト処理
     document.getElementById('logout-btn').addEventListener('click', () => {
       auth.signOut();
     });
 
-    // 重複申請チェック関数
     async function checkAlreadySubmitted(email) {
-      const submitBtn = document.getElementById('submit-btn');
       const requestForm = document.getElementById('request-form');
       const alreadySubmittedMsg = document.getElementById('already-submitted');
 
       try {
-        // Firestoreから「今回の合言葉（appKey）」で、かつ「ログインユーザーのemail」に一致するデータを検索
         const querySnapshot = await db.collection("requests")
           .where("appKey", "==", CURRENT_APPLICATION.appKey)
           .where("email", "==", email)
           .get();
 
         if (!querySnapshot.empty) {
-          // すでにデータが存在する場合：フォームを非表示にしてメッセージを出す
           requestForm.classList.add('hidden');
+          alreadySubmittedMsg.textContent = "今回の申請は既に完了しています。";
           alreadySubmittedMsg.classList.remove('hidden');
         } else {
-          // まだ申請していない場合：通常通り表示
           requestForm.classList.remove('hidden');
           alreadySubmittedMsg.classList.add('hidden');
         }
@@ -251,38 +410,45 @@
       }
     }
 
-    // 申請フォーム送信処理
     document.getElementById('request-form').addEventListener('submit', async (e) => {
-      e.preventDefault(); // ページのリロードを防ぐ
+      e.preventDefault(); 
       
       const submitBtn = document.getElementById('submit-btn');
+      const deptVal = document.getElementById('input-dept').value.trim();
+      const nameVal = document.getElementById('input-name').value.trim();
+
+      if (!deptVal || !nameVal) {
+        alert("所属部署と教職員氏名を入力してください。");
+        return;
+      }
       
-      // 二重送信を防ぐために一時的に無効化
       submitBtn.disabled = true;
       submitBtn.textContent = "送信中...";
 
       try {
-        // グローバル変数で取得・保持している「detectedDept（部署）」と「detectedName（氏名）」を
-        // そのまま Firestore の "requests" コレクションに書き込みます
+        await db.collection("common_users").doc(currentUser.uid).set({
+          dept: deptVal,
+          name: nameVal,
+          email: currentUser.email,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
         await db.collection("requests").add({
           appKey: CURRENT_APPLICATION.appKey,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           email: currentUser.email,
-          department: detectedDept, // ログイン時に取得した部署
-          userName: detectedName,   // ログイン時に取得した氏名
+          department: deptVal,
+          userName: nameVal,
           status: "未配布"
         });
 
-        alert("申請が完了しました！");
-        
-        // 申請完了したら、再度重複チェックを走らせてフォームを非表示にします
+        alert("プロフィールの更新および、申請が完了しました！");
         await checkAlreadySubmitted(currentUser.email);
 
       } catch (error) {
-        console.error("送信エラー:", error);
+        console.error("送信・保存エラー:", error);
         alert("送信に失敗しました。エラー: " + error.message);
         
-        // エラー時はボタンを元に戻して再試行できるようにする
         submitBtn.disabled = false;
         submitBtn.textContent = "この内容で申請する";
       }
