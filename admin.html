@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col justify-between">
 
   <!-- ヘッダー -->
@@ -19,16 +21,19 @@
 
   <!-- メインコンテンツ -->
   <main class="container mx-auto px-4 py-8 max-w-4xl flex-grow">
-    
+
     <!-- 1. 合言葉の指定 & 統計情報 -->
     <div class="bg-white p-6 rounded-lg shadow-md mb-6">
       <h2 class="text-lg font-bold mb-4 text-slate-700">対象データの指定</h2>
       <div class="flex flex-col sm:flex-row gap-4 items-end mb-6">
         <div class="flex-grow">
           <label class="block text-sm font-bold mb-1 text-gray-600">表示する申請の「合言葉（appKey）」</label>
-          <input type="text" id="target-appkey" class="w-full border rounded p-2 text-base font-mono" value="book-2026-07">
+          <!-- valueを空にし、type="password"に変更して非表示化 -->
+          <input type="password" id="target-appkey" class="w-full border rounded p-2 text-base font-mono" value=""
+            placeholder="合言葉（appKey）を入力してください" autocomplete="off">
         </div>
-        <button id="load-btn" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-6 py-2 rounded h-10 transition">
+        <button id="load-btn"
+          class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-6 py-2 rounded h-10 transition">
           読み込み / 更新
         </button>
       </div>
@@ -54,7 +59,8 @@
     <div class="bg-white p-6 rounded-lg shadow-md">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-bold text-slate-700">申請者一覧</h2>
-        <button id="download-csv-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-1.5 rounded text-sm transition">
+        <button id="download-csv-btn"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-1.5 rounded text-sm transition">
           CSVダウンロード (Excel用)
         </button>
       </div>
@@ -74,7 +80,7 @@
           <tbody id="requests-list" class="divide-y divide-gray-200">
             <tr>
               <td colspan="6" class="px-4 py-8 text-center text-gray-500">
-                上の「読み込み」ボタンを押すとデータが表示されます。
+                合言葉（appKey）を入力して「読み込み」ボタンを押すとデータが表示されます。
               </td>
             </tr>
           </tbody>
@@ -94,7 +100,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<script>
+  <script>
     // === Firebase初期設定情報 (教職員用と同じ) ===
     const firebaseConfig = {
       apiKey: "AIzaSyAL9f7KI0DfiOo0xqGGdAMKWFCI82k31N8",
@@ -108,7 +114,7 @@
     // Firebase 初期化
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const auth = firebase.auth(); // ★追加：Authオブジェクトの初期化
+    const auth = firebase.auth();
 
     // グローバルで現在の申請データを保持する配列
     let currentRequests = [];
@@ -129,15 +135,22 @@
     let unsubscribe = null;
 
     function loadRequests() {
-      // ログインしていない場合は処理中断（エラー防止）
+      // ログインしていない場合は処理中断
       if (!auth.currentUser) {
-        console.log("未認証状態のためログイン完了を待機中...");
+        alert("認証処理中です。数秒待ってから再度「読み込み」を押してください。");
         return;
       }
 
       const appKey = document.getElementById('target-appkey').value.trim();
+      const listContainer = document.getElementById('requests-list');
+
       if (!appKey) {
-        alert("合言葉を入力してください。");
+        alert("合言葉（appKey）を入力してください。");
+        // クリア処理
+        if (unsubscribe) unsubscribe();
+        currentRequests = [];
+        listContainer.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">合言葉（appKey）を入力して「読み込み」ボタンを押すとデータが表示されます。</td></tr>`;
+        updateStats(0, 0, 0);
         return;
       }
 
@@ -146,7 +159,6 @@
         unsubscribe();
       }
 
-      const listContainer = document.getElementById('requests-list');
       listContainer.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">データを読み込み中...</td></tr>`;
 
       // リアルタイムリスナーを開始
@@ -162,7 +174,7 @@
           let completedCount = 0;
 
           if (querySnapshot.empty) {
-            listContainer.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">申請データはまだありません。</td></tr>`;
+            listContainer.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">「${appKey}」の申請データはまだありません（または合言葉が違います）。</td></tr>`;
             updateStats(0, 0, 0);
             return;
           }
@@ -186,7 +198,7 @@
 
             // ステータスに応じたデザイン定義
             const isCompleted = data.status === "配布済";
-            const statusBadge = isCompleted 
+            const statusBadge = isCompleted
               ? `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">配布済</span>`
               : `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">未配布</span>`;
 
@@ -231,7 +243,7 @@
       }
     }
 
-    // Excelで開いたときに絶対に文字化けしない「Shift-JIS」でのCSVダウンロード処理
+    // Excel用 Shift-JIS CSVダウンロード処理
     document.getElementById('download-csv-btn').addEventListener('click', () => {
       if (currentRequests.length === 0) {
         alert("ダウンロードするデータがありません。");
@@ -242,7 +254,7 @@
 
       // ヘッダー行
       const headers = ["申請日時", "所属部署", "氏名", "メールアドレス", "配布ステータス"];
-      
+
       // データ行の作成
       const rows = currentRequests.map(req => [
         formatTimestamp(req.createdAt),
@@ -257,7 +269,7 @@
         .map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
         .join("\r\n");
 
-      // 日本語のExcel用に Shift-JIS にエンコードしてダウンロードさせる処理
+      // Shift-JIS エンコードダウンロード
       try {
         const script = document.createElement('script');
         script.src = "https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js";
@@ -268,7 +280,7 @@
           }
           const sjisCodes = Encoding.convert(unicodeCodes, 'SJIS', 'UNICODE');
           const sjisBlob = new Blob([new Uint8Array(sjisCodes)], { type: "text/csv;charset=shift_jis;" });
-          
+
           const link = document.createElement("a");
           link.href = URL.createObjectURL(sjisBlob);
           link.setAttribute("download", `申請一覧_${appKey}.csv`);
@@ -292,21 +304,24 @@
     // ボタンのクリックイベントに読み込み処理をバインド
     document.getElementById('load-btn').addEventListener('click', loadRequests);
 
-    // ★追加：Firebaseの認証状態を監視し、ログイン完了後に自動でデータを読み込む
+    // エンターキーを押したときにも「読み込み」が実行されるよう利便性を向上
+    document.getElementById('target-appkey').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        loadRequests();
+      }
+    });
+
+    // Firebase認証のバックグラウンド接続のみ（自動データロード機能は削除済み）
     auth.onAuthStateChanged((user) => {
       if (user) {
-        console.log("管理者ログイン確認完了:", user.uid);
-        // ログインが確認出来たらデータを自動読み込み
-        loadRequests();
+        console.log("管理者認証接続完了:", user.uid);
       } else {
-        console.log("未ログイン状態のため、匿名ログインを試行します...");
-        // バックグラウンドで匿名ログインを実行（メールアドレス・パスワード入力なしでパスする）
         auth.signInAnonymously().catch((error) => {
           console.error("匿名ログイン失敗:", error);
-          alert("認証に失敗しました。画面を再読み込みしてください。\nブラウザにユーザ情報が残っていない可能性があります。\nそのブラウザで別アプリからユーザーログインを実行してみてください");
         });
       }
     });
   </script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,27 +8,43 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
   </style>
 </head>
+
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
 
   <!-- ヘッダー -->
   <header class="bg-blue-700 text-white p-4 shadow-md">
     <div class="container mx-auto flex justify-between items-center">
       <h1 id="app-title" class="text-xl font-bold">学内申請アプリ</h1>
-      <button id="logout-btn" class="bg-blue-600 hover:bg-blue-800 text-white px-3 py-1 rounded text-sm hidden">ログアウト</button>
+      <button id="logout-btn"
+        class="bg-blue-600 hover:bg-blue-800 text-white px-3 py-1 rounded text-sm hidden">ログアウト</button>
     </div>
   </header>
 
   <!-- メインコンテンツ -->
   <main class="container mx-auto px-4 py-8 max-w-md flex-grow">
-    
+
     <!-- 🔒 1. 認証セクション（ログイン / 新規登録 兼用カード） -->
     <div id="login-section" class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
       <!-- ステータスバナー -->
-      <div id="statusBanner" class="p-3 text-center text-xs font-semibold border-b bg-slate-50 flex items-center justify-center gap-2">
+      <div id="statusBanner"
+        class="p-3 text-center text-xs font-semibold border-b bg-slate-50 flex items-center justify-center gap-2">
         <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
         <span id="statusBannerText">学内アカウントでサインイン</span>
       </div>
@@ -35,25 +52,31 @@
       <div class="p-6 bg-slate-50/50 border-b border-slate-100 text-center">
         <h2 id="authTitle" class="text-lg font-bold text-slate-900">ログイン</h2>
         <p class="text-xs text-slate-500 mt-1">許可されたドメインのメールアドレスのみ利用できます</p>
-        <div class="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+        <div
+          class="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
           <span>許可ドメイン: <strong id="allowedDomainLabel">確認中</strong></span>
         </div>
       </div>
 
       <div class="p-6 space-y-4">
         <!-- エラーメッセージ表示エリア -->
-        <div id="login-error" class="hidden p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs font-medium"></div>
+        <div id="login-error"
+          class="hidden p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs font-medium"></div>
 
         <!-- メールアドレス -->
         <div>
           <label class="block text-xs font-medium text-slate-500 mb-1">メールアドレス</label>
-          <input type="email" id="login-email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="user@seiwa.ac.jp">
+          <input type="email" id="login-email"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+            placeholder="user@seiwa.ac.jp">
         </div>
 
         <!-- パスワード -->
         <div>
           <label class="block text-xs font-medium text-slate-500 mb-1">このシステムのパスワード（６文字以上）</label>
-          <input type="password" id="login-password" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="••••••••">
+          <input type="password" id="login-password"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+            placeholder="••••••••">
           <div id="forgotPasswordLinkContainer" class="text-right mt-2">
             <button type="button" onclick="handlePasswordReset()" class="text-xs text-blue-600 hover:underline">
               パスワードをお忘れの方はこちら
@@ -65,26 +88,35 @@
         <div id="registerFields" class="hidden space-y-4 pt-2 border-t border-slate-100 animate-fadeIn">
           <div>
             <label class="block text-xs font-medium text-slate-500 mb-1">所属部署</label>
-            <input type="text" id="registerDept" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="例: 事務局、英語科">
+            <input type="text" id="registerDept"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+              placeholder="例: 事務局、英語科">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-500 mb-1">氏名</label>
-            <input type="text" id="registerName" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="例: 山田 太郎">
+            <input type="text" id="registerName"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+              placeholder="例: 山田 太郎">
           </div>
 
           <!-- 💡 ここに追加します！ -->
           <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
-             <p class="text-xs text-amber-800 font-medium mb-1.5">登録メールのリンクを押す際の手順や警告画面について</p>
-             <a href="https://mikamine-office.github.io/user-manual/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition shadow-sm">
-               <span>📖 図解マニュアル（別タブで開く）</span>
-               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 2 0 00-2 2v10a2 2 2 0 002 2h10a2 2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-             </a>
+            <p class="text-xs text-amber-800 font-medium mb-1.5">登録メールのリンクを押す際の手順や警告画面について</p>
+            <a href="https://mikamine-office.github.io/user-manual/" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-1 w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition shadow-sm">
+              <span>📖 図解マニュアル（別タブで開く）</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M10 6H6a2 2 2 0 00-2 2v10a2 2 2 0 002 2h10a2 2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              </svg>
+            </a>
           </div>
 
         </div>
 
         <!-- アクションボタン -->
-        <button id="login-btn" class="w-full py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition mt-4">
+        <button id="login-btn"
+          class="w-full py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition mt-4">
           ログインする
         </button>
 
@@ -105,7 +137,8 @@
       </div>
 
       <!-- 既に申請済み・または受付終了の場合のメッセージ -->
-      <div id="already-submitted" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded mb-4 hidden text-center font-bold">
+      <div id="already-submitted"
+        class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded mb-4 hidden text-center font-bold">
         今回の申請は既に完了しています。
       </div>
 
@@ -113,15 +146,20 @@
       <form id="request-form" class="space-y-4">
         <div>
           <label class="block text-sm font-bold text-gray-700 mb-1">所属部署（修正したい場合は入力してください）</label>
-          <input type="text" id="input-dept" class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800" placeholder="（例：三神峯、事務室など）">
+          <input type="text" id="input-dept"
+            class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800"
+            placeholder="（例：三神峯、事務室など）">
         </div>
 
         <div>
           <label class="block text-sm font-bold text-gray-700 mb-1">教職員氏名（修正したい場合は入力してください）</label>
-          <input type="text" id="input-name" class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800" placeholder="（例：山田 太郎）">
+          <input type="text" id="input-name"
+            class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800"
+            placeholder="（例：山田 太郎）">
         </div>
 
-        <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow">
+        <button type="submit" id="submit-btn"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow">
           この内容で申請する
         </button>
       </form>
@@ -163,15 +201,15 @@
     // ==========================================
     // ★★★ 申請の設定 ＆ 締切日時判定 ★★★
     // ==========================================
-    // === 受付終了日時の設定 (2026年7月31日 00:00:00) ===
-    const deadline = new Date("2026-07-31T00:00:00");
+    // === 受付終了日時の設定 (2026年10月20日 00:00:00) ===
+    const deadline = new Date("2026-10-20T00:00:00");
     const now = new Date();
     const isClosed = now >= deadline;
 
     const CURRENT_APPLICATION = {
-      appKey: "book-2026-07",
-      title: "私学共済発行ハーモニー夏号 配布希望申請",
-      description: "希望される教職員の方にハーモニー夏号をお配りします。お一人様1冊までとなります。希望される方は申請してください。",
+      appKey: "book2026",
+      title: "私学共済発行_積立貯金後期募集のパンフレット 配布希望申請",
+      description: "希望される教職員の方にパンフレットをお配りします。お一人様1枚までとなります。希望される方は申請してください。",
       isClosed: isClosed // ★ 締切日時を過ぎている場合は自動的に true になります
     };
 
@@ -214,7 +252,7 @@
       setAuthMode(!isRegisterMode);
     });
 
-    window.handlePasswordReset = async function() {
+    window.handlePasswordReset = async function () {
       const email = prompt("登録されているメールアドレスを入力してください：");
       if (!email) return;
 
@@ -237,7 +275,7 @@
         });
     };
 
-    window.checkEmailVerificationOnLogin = function(user) {
+    window.checkEmailVerificationOnLogin = function (user) {
       if (!user.emailVerified) {
         alert("メールアドレスの認証が完了していません。\n送信されたメール内のリンクをクリックして有効化してください。");
         auth.signOut();
@@ -266,7 +304,7 @@
           alreadySubmittedMsg.classList.remove('hidden');
           return;
         }
-        
+
         try {
           const userDoc = await db.collection("common_users").doc(user.uid).get();
           const inputDept = document.getElementById('input-dept');
@@ -343,7 +381,7 @@
         auth.createUserWithEmailAndPassword(email, password)
           .then(async (userCredential) => {
             const newUser = userCredential.user;
-            
+
             await db.collection("common_users").doc(newUser.uid).set({
               dept: regDept,
               name: regName,
@@ -362,12 +400,12 @@
               `リンクをクリックし、Complete verification（検証を完了する）を押してください。\n\n` +
               `※リンクをクリックするまで、システムにはログインできません。`
             );
-            
+
             document.getElementById('registerDept').value = "";
             document.getElementById('registerName').value = "";
-            document.getElementById('login-password').value = ""; 
+            document.getElementById('login-password').value = "";
             setAuthMode(false);
-            
+
             await auth.signOut();
             isRegisteringProcess = false;
           })
@@ -421,8 +459,8 @@
     }
 
     document.getElementById('request-form').addEventListener('submit', async (e) => {
-      e.preventDefault(); 
-      
+      e.preventDefault();
+
       const submitBtn = document.getElementById('submit-btn');
       const deptVal = document.getElementById('input-dept').value.trim();
       const nameVal = document.getElementById('input-name').value.trim();
@@ -431,7 +469,7 @@
         alert("所属部署と教職員氏名を入力してください。");
         return;
       }
-      
+
       submitBtn.disabled = true;
       submitBtn.textContent = "送信中...";
 
@@ -458,11 +496,12 @@
       } catch (error) {
         console.error("送信・保存エラー:", error);
         alert("送信に失敗しました。エラー: " + error.message);
-        
+
         submitBtn.disabled = false;
         submitBtn.textContent = "この内容で申請する";
       }
     });
   </script>
 </body>
+
 </html>
