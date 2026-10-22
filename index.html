@@ -40,9 +40,8 @@
   <!-- メインコンテンツ -->
   <main class="container mx-auto px-4 py-8 max-w-md flex-grow">
 
-    <!-- 🔒 1. 認証セクション（ログイン / 新規登録 兼用カード） -->
+    <!-- 🔒 1. 認証セクション -->
     <div id="login-section" class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
-      <!-- ステータスバナー -->
       <div id="statusBanner"
         class="p-3 text-center text-xs font-semibold border-b bg-slate-50 flex items-center justify-center gap-2">
         <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
@@ -59,11 +58,9 @@
       </div>
 
       <div class="p-6 space-y-4">
-        <!-- エラーメッセージ表示エリア -->
         <div id="login-error"
           class="hidden p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs font-medium"></div>
 
-        <!-- メールアドレス -->
         <div>
           <label class="block text-xs font-medium text-slate-500 mb-1">メールアドレス</label>
           <input type="email" id="login-email"
@@ -71,7 +68,6 @@
             placeholder="user@seiwa.ac.jp">
         </div>
 
-        <!-- パスワード -->
         <div>
           <label class="block text-xs font-medium text-slate-500 mb-1">このシステムのパスワード（６文字以上）</label>
           <input type="password" id="login-password"
@@ -84,7 +80,6 @@
           </div>
         </div>
 
-        <!-- 👤 新規登録時のみ表示するプロフィール入力エリア -->
         <div id="registerFields" class="hidden space-y-4 pt-2 border-t border-slate-100 animate-fadeIn">
           <div>
             <label class="block text-xs font-medium text-slate-500 mb-1">所属部署</label>
@@ -99,28 +94,20 @@
               placeholder="例: 山田 太郎">
           </div>
 
-          <!-- 💡 ここに追加します！ -->
           <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
             <p class="text-xs text-amber-800 font-medium mb-1.5">登録メールのリンクを押す際の手順や警告画面について</p>
             <a href="https://mikamine-office.github.io/user-manual/" target="_blank" rel="noopener noreferrer"
               class="inline-flex items-center justify-center gap-1 w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition shadow-sm">
               <span>📖 図解マニュアル（別タブで開く）</span>
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M10 6H6a2 2 2 0 00-2 2v10a2 2 2 0 002 2h10a2 2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-              </svg>
             </a>
           </div>
-
         </div>
 
-        <!-- アクションボタン -->
         <button id="login-btn"
           class="w-full py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition mt-4">
           ログインする
         </button>
 
-        <!-- モード切り替えリンク -->
         <div class="text-center pt-2">
           <button id="toggleAuthModeBtn" class="text-xs text-blue-500 hover:underline font-medium">
             初めてこの三神峯事務室システムを使う方（新規登録）
@@ -129,33 +116,60 @@
       </div>
     </div>
 
-    <!-- 📄 2. 申請フォーム（ログインかつメール認証完了後に表示） -->
+    <!-- 📄 2. 申請フォーム -->
     <div id="form-section" class="bg-white p-6 rounded-lg shadow-md hidden">
       <div class="border-b pb-4 mb-4">
         <h2 id="form-title" class="text-xl font-bold text-blue-700">申請タイトル</h2>
-        <p id="form-desc" class="text-gray-600 text-sm mt-1">説明文がここに表示されます。</p>
+        <p id="form-desc" class="text-gray-600 text-sm mt-1 whitespace-pre-line">説明文がここに表示されます。</p>
       </div>
 
-      <!-- 既に申請済み・または受付終了の場合のメッセージ -->
       <div id="already-submitted"
         class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded mb-4 hidden text-center font-bold">
         今回の申請は既に完了しています。
       </div>
 
-      <!-- 申請者情報入力＆申請フォーム -->
-      <form id="request-form" class="space-y-4">
+      <form id="request-form" class="space-y-5">
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">所属部署（修正したい場合は入力してください）</label>
+          <label class="block text-sm font-bold text-gray-700 mb-1">所属部署</label>
           <input type="text" id="input-dept"
             class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800"
-            placeholder="（例：三神峯、事務室など）">
+            placeholder="（例：事務局、英語科）">
         </div>
 
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">教職員氏名（修正したい場合は入力してください）</label>
+          <label class="block text-sm font-bold text-gray-700 mb-1">教職員氏名</label>
           <input type="text" id="input-name"
             class="w-full border rounded p-2 bg-gray-50 focus:bg-white font-semibold text-gray-800"
             placeholder="（例：山田 太郎）">
+        </div>
+
+        <!-- 📚 希望冊子選択エリア（複数選択対応） -->
+        <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-100 space-y-3">
+          <label class="block text-sm font-bold text-blue-900 border-b border-blue-200 pb-1">
+            希望する冊子を選択してください（複数選択可）
+          </label>
+
+          <!-- 冊子1 -->
+          <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+            <label class="flex items-center space-x-2 cursor-pointer text-sm font-semibold text-gray-800">
+              <input type="checkbox" id="book1-check" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span>積立共済年金制度のリーフレット</span>
+            </label>
+            <select id="book1-qty" class="border rounded px-2 py-1 text-sm bg-gray-50 font-bold text-gray-700">
+              <option value="1">1冊</option>
+            </select>
+          </div>
+
+          <!-- 冊子2 -->
+          <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+            <label class="flex items-center space-x-2 cursor-pointer text-sm font-semibold text-gray-800">
+              <input type="checkbox" id="book2-check" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span>ハーモニー秋号</span>
+            </label>
+            <select id="book2-qty" class="border rounded px-2 py-1 text-sm bg-gray-50 font-bold text-gray-700">
+              <option value="1">1冊</option>
+            </select>
+          </div>
         </div>
 
         <button type="submit" id="submit-btn"
@@ -167,20 +181,16 @@
 
   </main>
 
-  <!-- フッター -->
   <footer class="bg-gray-100 text-center py-4 text-xs text-gray-500 border-t">
     &copy; 2026 学内システム管理
   </footer>
 
-  <!-- Firebase SDK（Ver 9の互換モード） -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // ==========================================
-    // ★★★ Firebase初期設定情報 ★★★
-    // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyAL9f7KI0DfiOo0xqGGdAMKWFCI82k31N8",
       authDomain: "reserved-room-d300a.firebaseapp.com",
@@ -190,7 +200,6 @@
       appId: "1:821240889276:web:00fbaa6fcdd955badb75b9"
     };
 
-    // Firebase 初期化
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -199,18 +208,17 @@
     document.getElementById('allowedDomainLabel').textContent = ALLOWED_DOMAIN ? `@${ALLOWED_DOMAIN}` : "制限なし";
 
     // ==========================================
-    // ★★★ 申請の設定 ＆ 締切日時判定 ★★★
+    // ★ 期限と設定の更新 (2026年11月20日 00:00:00)
     // ==========================================
-    // === 受付終了日時の設定 (2026年10月20日 00:00:00) ===
-    const deadline = new Date("2026-10-20T00:00:00");
+    const deadline = new Date("2026-11-20T00:00:00");
     const now = new Date();
     const isClosed = now >= deadline;
 
     const CURRENT_APPLICATION = {
-      appKey: "book2026",
-      title: "私学共済発行_積立貯金後期募集のパンフレット 配布希望申請",
-      description: "希望される教職員の方にパンフレットをお配りします。お一人様1枚までとなります。希望される方は申請してください。",
-      isClosed: isClosed // ★ 締切日時を過ぎている場合は自動的に true になります
+      appKey: "minagawa", // ★ 今回用の合言葉
+      title: "私学共済 資料配付希望申請",
+      description: "私学共済より資料の案内が届いております。\n紙媒体の冊子をご希望の方は、必要な資料を選択して注文をお願いします。",
+      isClosed: isClosed
     };
 
     document.getElementById('app-title').textContent = CURRENT_APPLICATION.title;
@@ -262,29 +270,19 @@
       }
 
       auth.sendPasswordResetEmail(email)
-        .then(() => {
-          alert("パスワード再設定メールを送信しました！\nメールボックス（または迷惑メールフォルダ）をご確認ください。");
-        })
-        .catch(error => {
-          console.error("エラー詳細:", error);
-          if (error.code === 'auth/user-not-found') {
-            alert("このメールアドレスは登録されていません。");
-          } else {
-            alert("メール送信に失敗しました。アドレスに間違いがないかご確認ください。");
-          }
-        });
+        .then(() => alert("パスワード再設定メールを送信しました！"))
+        .catch(() => alert("メール送信に失敗しました。"));
     };
 
     window.checkEmailVerificationOnLogin = function (user) {
       if (!user.emailVerified) {
-        alert("メールアドレスの認証が完了していません。\n送信されたメール内のリンクをクリックして有効化してください。");
+        alert("メールアドレスの認証が完了していません。");
         auth.signOut();
         return false;
       }
       return true;
     };
 
-    // 🔄 ログイン状態の監視
     auth.onAuthStateChanged(async (user) => {
       if (isRegisteringProcess) return;
 
@@ -295,12 +293,10 @@
         showSection('form-section');
         document.getElementById('logout-btn').classList.remove('hidden');
 
-        // ★ 自動判定で締切（isClosed: true）になった場合
         if (CURRENT_APPLICATION.isClosed) {
           const alreadySubmittedMsg = document.getElementById('already-submitted');
-          const requestForm = document.getElementById('request-form');
-          requestForm.classList.add('hidden');
-          alreadySubmittedMsg.textContent = "この注文アプリは現在停止中（受付期間外）です。";
+          document.getElementById('request-form').classList.add('hidden');
+          alreadySubmittedMsg.textContent = "この注文アプリは受付期間外（終了）です。";
           alreadySubmittedMsg.classList.remove('hidden');
           return;
         }
@@ -312,23 +308,8 @@
 
           if (userDoc.exists) {
             const userData = userDoc.data();
-            const currentDept = userData.dept || "";
-            const currentName = userData.name || "";
-
-            if (currentDept === "社員" || currentDept === "プロファイル未登録") {
-              inputDept.value = "";
-            } else {
-              inputDept.value = currentDept;
-            }
-
-            if (currentName === "メンバー" || currentName === "（新規ユーザー）") {
-              inputName.value = "";
-            } else {
-              inputName.value = currentName;
-            }
-          } else {
-            inputDept.value = "";
-            inputName.value = "";
+            inputDept.value = (userData.dept === "社員" || userData.dept === "プロファイル未登録") ? "" : (userData.dept || "");
+            inputName.value = (userData.name === "メンバー" || userData.name === "（新規ユーザー）") ? "" : (userData.name || "");
           }
         } catch (error) {
           console.error("プロフィール取得エラー:", error);
@@ -360,16 +341,9 @@
         return;
       }
 
-      if (ALLOWED_DOMAIN && !email.endsWith("@" + ALLOWED_DOMAIN)) {
-        errorEl.textContent = `このシステムは「@${ALLOWED_DOMAIN}」のメールアドレスのみ利用可能です。`;
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
       if (isRegisterMode) {
         const regDept = document.getElementById('registerDept').value.trim();
         const regName = document.getElementById('registerName').value.trim();
-
         if (!regDept || !regName) {
           errorEl.textContent = "所属部署と氏名を入力してください。";
           errorEl.classList.remove('hidden');
@@ -377,63 +351,35 @@
         }
 
         isRegisteringProcess = true;
-
         auth.createUserWithEmailAndPassword(email, password)
           .then(async (userCredential) => {
             const newUser = userCredential.user;
-
             await db.collection("common_users").doc(newUser.uid).set({
-              dept: regDept,
-              name: regName,
-              email: email,
-              createdAt: new Date().toISOString()
+              dept: regDept, name: regName, email: email, createdAt: new Date().toISOString()
             });
-
             return newUser.sendEmailVerification();
           })
           .then(async () => {
-            alert(
-              `【仮登録が完了しました！】\n\n` +
-              `${email} 宛にアカウント有効化メールを送信しました。\n` +
-              `迷惑メールフォルダに着信している可能性があります。\n` +
-              `メール内のリンクをクリックしてアカウントを有効化した後、ログイン画面からログインしてください。\n` +
-              `リンクをクリックし、Complete verification（検証を完了する）を押してください。\n\n` +
-              `※リンクをクリックするまで、システムにはログインできません。`
-            );
-
-            document.getElementById('registerDept').value = "";
-            document.getElementById('registerName').value = "";
-            document.getElementById('login-password').value = "";
+            alert("仮登録完了メールを送信しました。リンクをクリックして認証を完了してください。");
             setAuthMode(false);
-
             await auth.signOut();
             isRegisteringProcess = false;
           })
           .catch(error => {
             isRegisteringProcess = false;
-            console.error("新規登録エラー:", error);
-            if (error.code === "auth/email-already-in-use") {
-              errorEl.textContent = "このメールアドレスは既に登録されています。";
-            } else if (error.code === "auth/weak-password") {
-              errorEl.textContent = "パスワードは6文字以上で設定してください。";
-            } else {
-              errorEl.textContent = "アカウント登録に失敗しました: " + error.message;
-            }
+            errorEl.textContent = "登録エラー: " + error.message;
             errorEl.classList.remove('hidden');
           });
-
       } else {
         auth.signInWithEmailAndPassword(email, password)
-          .catch(error => {
-            errorEl.textContent = "ログインに失敗しました。メールアドレスまたはパスワードを確認してください。";
+          .catch(() => {
+            errorEl.textContent = "ログインに失敗しました。";
             errorEl.classList.remove('hidden');
           });
       }
     });
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      auth.signOut();
-    });
+    document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
 
     async function checkAlreadySubmitted(email) {
       const requestForm = document.getElementById('request-form');
@@ -458,6 +404,7 @@
       }
     }
 
+    // フォーム送信処理
     document.getElementById('request-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -465,9 +412,28 @@
       const deptVal = document.getElementById('input-dept').value.trim();
       const nameVal = document.getElementById('input-name').value.trim();
 
+      const b1Checked = document.getElementById('book1-check').checked;
+      const b2Checked = document.getElementById('book2-check').checked;
+
       if (!deptVal || !nameVal) {
         alert("所属部署と教職員氏名を入力してください。");
         return;
+      }
+
+      if (!b1Checked && !b2Checked) {
+        alert("希望する冊子を少なくとも1つ選択してください。");
+        return;
+      }
+
+      // 選択状況のまとめテキスト作成
+      const requestedItems = [];
+      if (b1Checked) {
+        const qty1 = document.getElementById('book1-qty').value;
+        requestedItems.push(`積立共済年金制度のリーフレット (${qty1}冊)`);
+      }
+      if (b2Checked) {
+        const qty2 = document.getElementById('book2-qty').value;
+        requestedItems.push(`ハーモニー秋号 (${qty2}冊)`);
       }
 
       submitBtn.disabled = true;
@@ -487,15 +453,16 @@
           email: currentUser.email,
           department: deptVal,
           userName: nameVal,
+          requestedBooks: requestedItems.join(" / "), // 選択した冊子を結合して保存
           status: "未配布"
         });
 
-        alert("プロフィールの更新および、申請が完了しました！");
+        alert("申請が完了しました！");
         await checkAlreadySubmitted(currentUser.email);
 
       } catch (error) {
         console.error("送信・保存エラー:", error);
-        alert("送信に失敗しました。エラー: " + error.message);
+        alert("送信に失敗しました: " + error.message);
 
         submitBtn.disabled = false;
         submitBtn.textContent = "この内容で申請する";
