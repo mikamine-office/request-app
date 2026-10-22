@@ -5,13 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>学内申請アプリ - 管理者画面</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col justify-between">
 
-  <!-- ヘッダー -->
   <header class="bg-slate-800 text-white p-4 shadow-md">
     <div class="container mx-auto flex justify-between items-center">
       <h1 class="text-xl font-bold">📚 学内申請アプリ 管理者システム</h1>
@@ -19,16 +17,13 @@
     </div>
   </header>
 
-  <!-- メインコンテンツ -->
-  <main class="container mx-auto px-4 py-8 max-w-4xl flex-grow">
+  <main class="container mx-auto px-4 py-8 max-w-5xl flex-grow">
 
-    <!-- 1. 合言葉の指定 & 統計情報 -->
     <div class="bg-white p-6 rounded-lg shadow-md mb-6">
       <h2 class="text-lg font-bold mb-4 text-slate-700">対象データの指定</h2>
       <div class="flex flex-col sm:flex-row gap-4 items-end mb-6">
         <div class="flex-grow">
           <label class="block text-sm font-bold mb-1 text-gray-600">表示する申請の「合言葉（appKey）」</label>
-          <!-- valueを空にし、type="password"に変更して非表示化 -->
           <input type="password" id="target-appkey" class="w-full border rounded p-2 text-base font-mono" value=""
             placeholder="合言葉（appKey）を入力してください" autocomplete="off">
         </div>
@@ -38,7 +33,6 @@
         </button>
       </div>
 
-      <!-- 簡易スタッツ -->
       <div class="grid grid-cols-3 gap-4 border-t pt-4 text-center">
         <div class="bg-blue-50 p-3 rounded">
           <span class="block text-xs text-blue-600 font-bold">総申請数</span>
@@ -55,7 +49,6 @@
       </div>
     </div>
 
-    <!-- 2. 申請一覧テーブル -->
     <div class="bg-white p-6 rounded-lg shadow-md">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-bold text-slate-700">申請者一覧</h2>
@@ -69,12 +62,12 @@
         <table class="w-full table-auto border-collapse text-left text-sm">
           <thead>
             <tr class="bg-slate-100 text-slate-700 uppercase text-xs font-bold border-b">
-              <th class="px-4 py-3">申請日時</th>
-              <th class="px-4 py-3">所属部署</th>
-              <th class="px-4 py-3">氏名</th>
-              <th class="px-4 py-3">メールアドレス</th>
-              <th class="px-4 py-3">ステータス</th>
-              <th class="px-4 py-3 text-center">操作</th>
+              <th class="px-3 py-3">申請日時</th>
+              <th class="px-3 py-3">所属部署</th>
+              <th class="px-3 py-3">氏名</th>
+              <th class="px-3 py-3">希望冊子</th>
+              <th class="px-3 py-3">ステータス</th>
+              <th class="px-3 py-3 text-center">操作</th>
             </tr>
           </thead>
           <tbody id="requests-list" class="divide-y divide-gray-200">
@@ -90,18 +83,15 @@
 
   </main>
 
-  <!-- フッター -->
   <footer class="bg-gray-800 text-center py-4 text-xs text-gray-400 border-t border-slate-700">
     &copy; 2026 学内システム管理 (管理者用)
   </footer>
 
-  <!-- Firebase SDK Compat -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // === Firebase初期設定情報 (教職員用と同じ) ===
     const firebaseConfig = {
       apiKey: "AIzaSyAL9f7KI0DfiOo0xqGGdAMKWFCI82k31N8",
       authDomain: "reserved-room-d300a.firebaseapp.com",
@@ -111,15 +101,12 @@
       appId: "1:821240889276:web:00fbaa6fcdd955badb75b9"
     };
 
-    // Firebase 初期化
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // グローバルで現在の申請データを保持する配列
     let currentRequests = [];
 
-    // 日時をフォーマットするユーティリティ関数
     function formatTimestamp(timestamp) {
       if (!timestamp) return "---";
       const date = timestamp.toDate();
@@ -131,11 +118,9 @@
       return `${y}/${m}/${d} ${hh}:${mm}`;
     }
 
-    // データの読み込み & リアルタイム監視設定
     let unsubscribe = null;
 
     function loadRequests() {
-      // ログインしていない場合は処理中断
       if (!auth.currentUser) {
         alert("認証処理中です。数秒待ってから再度「読み込み」を押してください。");
         return;
@@ -146,7 +131,6 @@
 
       if (!appKey) {
         alert("合言葉（appKey）を入力してください。");
-        // クリア処理
         if (unsubscribe) unsubscribe();
         currentRequests = [];
         listContainer.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">合言葉（appKey）を入力して「読み込み」ボタンを押すとデータが表示されます。</td></tr>`;
@@ -154,14 +138,10 @@
         return;
       }
 
-      // 既存の監視があれば解除
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      if (unsubscribe) unsubscribe();
 
       listContainer.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">データを読み込み中...</td></tr>`;
 
-      // リアルタイムリスナーを開始
       unsubscribe = db.collection("requests")
         .where("appKey", "==", appKey)
         .orderBy("createdAt", "desc")
@@ -174,7 +154,7 @@
           let completedCount = 0;
 
           if (querySnapshot.empty) {
-            listContainer.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">「${appKey}」の申請データはまだありません（または合言葉が違います）。</td></tr>`;
+            listContainer.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">「${appKey}」の申請データはまだありません。</td></tr>`;
             updateStats(0, 0, 0);
             return;
           }
@@ -192,58 +172,51 @@
               pendingCount++;
             }
 
-            // テーブル行を生成
             const tr = document.createElement('tr');
             tr.className = "hover:bg-slate-50 transition";
 
-            // ステータスに応じたデザイン定義
             const isCompleted = data.status === "配布済";
             const statusBadge = isCompleted
-              ? `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">配布済</span>`
-              : `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">未配布</span>`;
+              ? `<span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">配布済</span>`
+              : `<span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">未配布</span>`;
 
             const actionButton = isCompleted
-              ? `<button onclick="toggleStatus('${id}', '未配布')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded text-xs font-bold transition">未配布に戻す</button>`
-              : `<button onclick="toggleStatus('${id}', '配布済')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-bold transition">配布完了にする</button>`;
+              ? `<button onclick="toggleStatus('${id}', '未配布')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-1 rounded text-xs font-bold transition">未配布に戻す</button>`
+              : `<button onclick="toggleStatus('${id}', '配布済')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-xs font-bold transition">配布完了にする</button>`;
 
             tr.innerHTML = `
-              <td class="px-4 py-3.5 whitespace-nowrap text-gray-600 font-mono">${formatTimestamp(data.createdAt)}</td>
-              <td class="px-4 py-3.5 font-medium">${data.department || '---'}</td>
-              <td class="px-4 py-3.5 font-medium">${data.userName || '---'}</td>
-              <td class="px-4 py-3.5 text-gray-500">${data.email || '---'}</td>
-              <td class="px-4 py-3.5">${statusBadge}</td>
-              <td class="px-4 py-3.5 text-center">${actionButton}</td>
+              <td class="px-3 py-3 text-gray-600 font-mono text-xs">${formatTimestamp(data.createdAt)}</td>
+              <td class="px-3 py-3 font-medium">${data.department || '---'}</td>
+              <td class="px-3 py-3 font-medium">${data.userName || '---'}</td>
+              <td class="px-3 py-3 font-bold text-blue-900">${data.requestedBooks || '1冊'}</td>
+              <td class="px-3 py-3">${statusBadge}</td>
+              <td class="px-3 py-3 text-center">${actionButton}</td>
             `;
             listContainer.appendChild(tr);
           });
 
-          // 統計数を更新
           updateStats(totalCount, pendingCount, completedCount);
         }, (error) => {
-          console.error("データ取得中にエラーが発生しました:", error);
+          console.error("データ取得エラー:", error);
           listContainer.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-red-500 font-bold">データ読み込みエラー: ${error.message}</td></tr>`;
         });
     }
 
-    // 統計表示の更新
     function updateStats(total, pending, completed) {
       document.getElementById('stat-total').textContent = total;
       document.getElementById('stat-pending').textContent = pending;
       document.getElementById('stat-completed').textContent = completed;
     }
 
-    // ステータスの切り替え (未配布 ⇄ 配布済)
     async function toggleStatus(docId, newStatus) {
       try {
-        await db.collection("requests").doc(docId).update({
-          status: newStatus
-        });
+        await db.collection("requests").doc(docId).update({ status: newStatus });
       } catch (error) {
-        alert("ステータスの更新に失敗しました: " + error.message);
+        alert("更新に失敗しました: " + error.message);
       }
     }
 
-    // Excel用 Shift-JIS CSVダウンロード処理
+    // CSV出力（希望冊子を含む）
     document.getElementById('download-csv-btn').addEventListener('click', () => {
       if (currentRequests.length === 0) {
         alert("ダウンロードするデータがありません。");
@@ -251,25 +224,21 @@
       }
 
       const appKey = document.getElementById('target-appkey').value.trim();
+      const headers = ["申請日時", "所属部署", "氏名", "メールアドレス", "希望冊子", "配布ステータス"];
 
-      // ヘッダー行
-      const headers = ["申請日時", "所属部署", "氏名", "メールアドレス", "配布ステータス"];
-
-      // データ行の作成
       const rows = currentRequests.map(req => [
         formatTimestamp(req.createdAt),
         req.department || "",
         req.userName || "",
         req.email || "",
+        req.requestedBooks || "1冊",
         req.status || "未配布"
       ]);
 
-      // CSVテキストの組み立て
       const csvContent = [headers, ...rows]
         .map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
         .join("\r\n");
 
-      // Shift-JIS エンコードダウンロード
       try {
         const script = document.createElement('script');
         script.src = "https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js";
@@ -301,25 +270,13 @@
       }
     });
 
-    // ボタンのクリックイベントに読み込み処理をバインド
     document.getElementById('load-btn').addEventListener('click', loadRequests);
-
-    // エンターキーを押したときにも「読み込み」が実行されるよう利便性を向上
     document.getElementById('target-appkey').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        loadRequests();
-      }
+      if (e.key === 'Enter') loadRequests();
     });
 
-    // Firebase認証のバックグラウンド接続のみ（自動データロード機能は削除済み）
     auth.onAuthStateChanged((user) => {
-      if (user) {
-        console.log("管理者認証接続完了:", user.uid);
-      } else {
-        auth.signInAnonymously().catch((error) => {
-          console.error("匿名ログイン失敗:", error);
-        });
-      }
+      if (!user) auth.signInAnonymously().catch(console.error);
     });
   </script>
 </body>
